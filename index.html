@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM - Sistema de Gerenciamento</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎯 CRM - Sistema de Gerenciamento</h1>
+            <p class="subtitle">Controle de IA e Engajamento</p>
+        </header>
+
+        <main>
+            <div class="dashboard">
+                <div class="status-panel">
+                    <h2>Status do Sistema</h2>
+                    <div class="status-grid">
+                        <div class="status-item">
+                            <span class="status-label">IA:</span>
+                            <span id="ia-status" class="status-value inactive">Inativa</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Mensagens de Reengajamento:</span>
+                            <span id="reengagement-status" class="status-value inactive">Inativas</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="controls-panel">
+                    <h2>Controles</h2>
+                    <div class="button-grid">
+                        <button id="btn-activate-ia" class="btn btn-success">
+                            <span class="btn-icon">🤖</span>
+                            <span class="btn-text">Ativar IA</span>
+                        </button>
+
+                        <button id="btn-pause-ia" class="btn btn-warning" disabled>
+                            <span class="btn-icon">⏸️</span>
+                            <span class="btn-text">Pausar IA</span>
+                        </button>
+
+                        <button id="btn-activate-reengagement" class="btn btn-primary">
+                            <span class="btn-icon">📨</span>
+                            <span class="btn-text">Ativar Mensagens de Reengajamento</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="activity-panel">
+                    <h2>Registro de Atividades</h2>
+                    <div id="activity-log" class="activity-log">
+                        <div class="log-entry">
+                            <span class="log-time">--:--:--</span>
+                            <span class="log-message">Sistema inicializado</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>CRM System © 2025 | Desenvolvido com ❤️</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
