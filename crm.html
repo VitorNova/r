@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM - Sistema de Gerenciamento</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        main {
+            padding: 40px;
+        }
+
+        .dashboard {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .status-panel,
+        .controls-panel,
+        .activity-panel {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .status-grid {
+            display: grid;
+            gap: 15px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .status-label {
+            font-weight: 600;
+            color: #555;
+            margin-right: 10px;
+        }
+
+        .status-value {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .status-value.active {
+            background: #28a745;
+            color: white;
+        }
+
+        .status-value.inactive {
+            background: #dc3545;
+            color: white;
+        }
+
+        .status-value.paused {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 20px 30px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #ffc107, #ff9800);
+            color: #333;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+        }
+
+        .btn-icon {
+            font-size: 1.5em;
+        }
+
+        .activity-log {
+            max-height: 300px;
+            overflow-y: auto;
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .log-entry {
+            display: flex;
+            gap: 15px;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            animation: slideIn 0.3s ease;
+        }
+
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+
+        .log-time {
+            font-weight: bold;
+            color: #667eea;
+            min-width: 80px;
+        }
+
+        .log-message {
+            color: #555;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            main {
+                padding: 20px;
+            }
+
+            .button-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .activity-log::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .activity-log::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .activity-log::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+
+        .activity-log::-webkit-scrollbar-thumb:hover {
+            background: #764ba2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎯 CRM - Sistema de Gerenciamento</h1>
+            <p class="subtitle">Controle de IA e Engajamento</p>
+        </header>
+
+        <main>
+            <div class="dashboard">
+                <div class="status-panel">
+                    <h2>Status do Sistema</h2>
+                    <div class="status-grid">
+                        <div class="status-item">
+                            <span class="status-label">IA:</span>
+                            <span id="ia-status" class="status-value inactive">Inativa</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Mensagens de Reengajamento:</span>
+                            <span id="reengagement-status" class="status-value inactive">Inativas</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="controls-panel">
+                    <h2>Controles</h2>
+                    <div class="button-grid">
+                        <button id="btn-activate-ia" class="btn btn-success">
+                            <span class="btn-icon">🤖</span>
+                            <span class="btn-text">Ativar IA</span>
+                        </button>
+
+                        <button id="btn-pause-ia" class="btn btn-warning" disabled>
+                            <span class="btn-icon">⏸️</span>
+                            <span class="btn-text">Pausar IA</span>
+                        </button>
+
+                        <button id="btn-activate-reengagement" class="btn btn-primary">
+                            <span class="btn-icon">📨</span>
+                            <span class="btn-text">Ativar Mensagens de Reengajamento</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="activity-panel">
+                    <h2>Registro de Atividades</h2>
+                    <div id="activity-log" class="activity-log">
+                        <div class="log-entry">
+                            <span class="log-time">--:--:--</span>
+                            <span class="log-message">Sistema inicializado</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>CRM System © 2025 | Desenvolvido com ❤️</p>
+        </footer>
+    </div>
+
+    <script>
+        // Estado do sistema
+        let systemState = {
+            iaActive: false,
+            iaPaused: false,
+            reengagementActive: false
+        };
+
+        // Elementos DOM
+        const btnActivateIA = document.getElementById('btn-activate-ia');
+        const btnPauseIA = document.getElementById('btn-pause-ia');
+        const btnActivateReengagement = document.getElementById('btn-activate-reengagement');
+        const iaStatus = document.getElementById('ia-status');
+        const reengagementStatus = document.getElementById('reengagement-status');
+        const activityLog = document.getElementById('activity-log');
+
+        // Função para adicionar log de atividade
+        function addLog(message, type = 'info') {
+            const now = new Date();
+            const time = now.toLocaleTimeString('pt-BR');
+
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.innerHTML = `
+                <span class="log-time">${time}</span>
+                <span class="log-message">${message}</span>
+            `;
+
+            activityLog.insertBefore(logEntry, activityLog.firstChild);
+
+            while (activityLog.children.length > 50) {
+                activityLog.removeChild(activityLog.lastChild);
+            }
+        }
+
+        // Função para atualizar status visual
+        function updateIAStatus() {
+            if (systemState.iaActive && !systemState.iaPaused) {
+                iaStatus.textContent = 'Ativa';
+                iaStatus.className = 'status-value active';
+            } else if (systemState.iaPaused) {
+                iaStatus.textContent = 'Pausada';
+                iaStatus.className = 'status-value paused';
+            } else {
+                iaStatus.textContent = 'Inativa';
+                iaStatus.className = 'status-value inactive';
+            }
+        }
+
+        function updateReengagementStatus() {
+            if (systemState.reengagementActive) {
+                reengagementStatus.textContent = 'Ativas';
+                reengagementStatus.className = 'status-value active';
+            } else {
+                reengagementStatus.textContent = 'Inativas';
+                reengagementStatus.className = 'status-value inactive';
+            }
+        }
+
+        // Função para atualizar botões
+        function updateButtons() {
+            if (systemState.iaActive && !systemState.iaPaused) {
+                btnActivateIA.disabled = true;
+                btnPauseIA.disabled = false;
+                btnActivateIA.innerHTML = '<span class="btn-icon">✓</span><span class="btn-text">IA Ativa</span>';
+            } else if (systemState.iaPaused) {
+                btnActivateIA.disabled = false;
+                btnActivateIA.innerHTML = '<span class="btn-icon">🔄</span><span class="btn-text">Retomar IA</span>';
+                btnPauseIA.disabled = false;
+                btnPauseIA.innerHTML = '<span class="btn-icon">✓</span><span class="btn-text">IA Pausada</span>';
+            } else {
+                btnActivateIA.disabled = false;
+                btnActivateIA.innerHTML = '<span class="btn-icon">🤖</span><span class="btn-text">Ativar IA</span>';
+                btnPauseIA.disabled = true;
+                btnPauseIA.innerHTML = '<span class="btn-icon">⏸️</span><span class="btn-text">Pausar IA</span>';
+            }
+
+            if (systemState.reengagementActive) {
+                btnActivateReengagement.disabled = false;
+                btnActivateReengagement.innerHTML = '<span class="btn-icon">✓</span><span class="btn-text">Reengajamento Ativo</span>';
+                btnActivateReengagement.className = 'btn btn-success';
+            } else {
+                btnActivateReengagement.disabled = false;
+                btnActivateReengagement.innerHTML = '<span class="btn-icon">📨</span><span class="btn-text">Ativar Mensagens de Reengajamento</span>';
+                btnActivateReengagement.className = 'btn btn-primary';
+            }
+        }
+
+        // Handler: Ativar IA
+        btnActivateIA.addEventListener('click', async () => {
+            if (systemState.iaPaused) {
+                systemState.iaPaused = false;
+                addLog('✅ IA retomada com sucesso', 'success');
+                updateIAStatus();
+                updateButtons();
+                await saveState();
+            } else {
+                systemState.iaActive = true;
+                systemState.iaPaused = false;
+                addLog('✅ IA ativada com sucesso', 'success');
+                updateIAStatus();
+                updateButtons();
+                await saveState();
+            }
+        });
+
+        // Handler: Pausar IA
+        btnPauseIA.addEventListener('click', async () => {
+            systemState.iaPaused = true;
+            addLog('⏸️ IA pausada', 'warning');
+            updateIAStatus();
+            updateButtons();
+            await saveState();
+        });
+
+        // Handler: Ativar Mensagens de Reengajamento
+        btnActivateReengagement.addEventListener('click', async () => {
+            if (systemState.reengagementActive) {
+                systemState.reengagementActive = false;
+                addLog('🔴 Mensagens de reengajamento desativadas', 'info');
+            } else {
+                systemState.reengagementActive = true;
+                addLog('✅ Mensagens de reengajamento ativadas', 'success');
+            }
+
+            updateReengagementStatus();
+            updateButtons();
+            await saveState();
+        });
+
+        // Função para salvar estado
+        async function saveState() {
+            try {
+                localStorage.setItem('crmState', JSON.stringify(systemState));
+                console.log('Estado salvo:', systemState);
+            } catch (error) {
+                console.error('Erro ao salvar estado:', error);
+                addLog('❌ Erro ao salvar configurações', 'error');
+            }
+        }
+
+        // Função para carregar estado
+        function loadState() {
+            try {
+                const saved = localStorage.getItem('crmState');
+                if (saved) {
+                    systemState = JSON.parse(saved);
+                    updateIAStatus();
+                    updateReengagementStatus();
+                    updateButtons();
+                    addLog('📂 Configurações anteriores carregadas', 'info');
+                }
+            } catch (error) {
+                console.error('Erro ao carregar estado:', error);
+            }
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            addLog('🚀 Sistema CRM inicializado', 'info');
+            loadState();
+        });
+
+        // Simulação de atividade
+        setInterval(() => {
+            if (systemState.iaActive && !systemState.iaPaused) {
+                const messages = [
+                    '🤖 IA processando leads...',
+                    '📊 IA analisando dados de clientes...',
+                    '💬 IA gerando respostas automáticas...',
+                    '🎯 IA identificando oportunidades...'
+                ];
+                const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+                addLog(randomMessage, 'info');
+            }
+
+            if (systemState.reengagementActive) {
+                const reengagementMessages = [
+                    '📨 Enviando mensagem de reengajamento...',
+                    '🔔 Cliente reengajado com sucesso',
+                    '💌 Campanha de reengajamento em andamento...'
+                ];
+                if (Math.random() > 0.7) {
+                    const randomMessage = reengagementMessages[Math.floor(Math.random() * reengagementMessages.length)];
+                    addLog(randomMessage, 'info');
+                }
+            }
+        }, 5000);
+    </script>
+</body>
+</html>
