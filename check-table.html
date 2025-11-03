@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificar Estrutura da Tabela LeadboxCRM</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #2d2d2d;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+        }
+        h1 {
+            color: #00ff00;
+            text-align: center;
+        }
+        .loading {
+            text-align: center;
+            font-size: 1.2em;
+            margin: 20px 0;
+        }
+        .result {
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+            white-space: pre-wrap;
+            font-size: 14px;
+        }
+        .error {
+            color: #ff0000;
+        }
+        .success {
+            color: #00ff00;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #00ff00;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background: #1e1e1e;
+            color: #00ff00;
+        }
+        .btn {
+            background: #00ff00;
+            color: #1e1e1e;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 10px 5px;
+        }
+        .btn:hover {
+            background: #00cc00;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Verificar Tabela LeadboxCRM</h1>
+
+        <div class="loading" id="loading">Conectando ao Supabase...</div>
+
+        <div id="result"></div>
+
+        <div style="text-align: center; margin-top: 20px;">
+            <button class="btn" onclick="checkTable()">🔄 Verificar Novamente</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://uaepkqqgagcuvgitakiz.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVhZXBrcXFnYWdjdXZnaXRha2l6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY1MDU1MTksImV4cCI6MjA3MjA4MTUxOX0.WCAEolWKmOvEuEVfb_D6BRNa2rBWcdqZ-WT8pGPG9e0';
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function checkTable() {
+            const loadingEl = document.getElementById('loading');
+            const resultEl = document.getElementById('result');
+
+            loadingEl.innerHTML = '🔄 Verificando tabela LeadboxCRM...';
+            resultEl.innerHTML = '';
+
+            try {
+                // Tentar pegar 1 registro para ver a estrutura
+                const { data, error } = await supabase
+                    .from('LeadboxCRM')
+                    .select('*')
+                    .limit(1);
+
+                if (error) {
+                    throw error;
+                }
+
+                loadingEl.innerHTML = '✅ Conexão bem-sucedida!';
+
+                if (data && data.length > 0) {
+                    // Tabela tem dados
+                    const columns = Object.keys(data[0]);
+                    const sampleData = data[0];
+
+                    let html = '<div class="success">';
+                    html += '<h2>✅ Tabela LeadboxCRM encontrada!</h2>';
+                    html += `<p><strong>Total de colunas:</strong> ${columns.length}</p>`;
+                    html += '<h3>📋 Estrutura da Tabela:</h3>';
+                    html += '<table>';
+                    html += '<tr><th>#</th><th>Nome da Coluna</th><th>Tipo</th><th>Exemplo de Valor</th></tr>';
+
+                    columns.forEach((col, index) => {
+                        const value = sampleData[col];
+                        const type = typeof value;
+                        html += `<tr>
+                            <td>${index + 1}</td>
+                            <td><strong>${col}</strong></td>
+                            <td>${type}</td>
+                            <td>${value !== null ? String(value).substring(0, 50) : 'null'}</td>
+                        </tr>`;
+                    });
+
+                    html += '</table>';
+                    html += '<h3>📄 JSON Completo do Primeiro Registro:</h3>';
+                    html += `<div class="result">${JSON.stringify(sampleData, null, 2)}</div>`;
+                    html += '</div>';
+
+                    resultEl.innerHTML = html;
+                } else {
+                    // Tabela existe mas está vazia
+                    loadingEl.innerHTML = '⚠️ Tabela encontrada mas está vazia';
+                    resultEl.innerHTML = `
+                        <div class="success">
+                            <h2>✅ Tabela LeadboxCRM encontrada!</h2>
+                            <p>⚠️ A tabela existe mas não tem nenhum registro ainda.</p>
+                            <p>Vou tentar pegar as colunas de outra forma...</p>
+                        </div>
+                    `;
+
+                    // Tentar pegar informações do schema
+                    const { data: schemaData, error: schemaError } = await supabase
+                        .from('LeadboxCRM')
+                        .select('*')
+                        .limit(0);
+
+                    if (!schemaError) {
+                        resultEl.innerHTML += `<div class="result">Schema info: ${JSON.stringify(schemaData, null, 2)}</div>`;
+                    }
+                }
+
+            } catch (error) {
+                loadingEl.innerHTML = '❌ Erro ao conectar';
+                resultEl.innerHTML = `
+                    <div class="error">
+                        <h2>❌ Erro:</h2>
+                        <p><strong>Mensagem:</strong> ${error.message}</p>
+                        <p><strong>Código:</strong> ${error.code || 'N/A'}</p>
+                        <p><strong>Detalhes:</strong> ${error.details || 'N/A'}</p>
+                        <div class="result">${JSON.stringify(error, null, 2)}</div>
+
+                        <h3>💡 Possíveis Soluções:</h3>
+                        <ul>
+                            <li>A tabela "LeadboxCRM" não existe (verifique o nome exato)</li>
+                            <li>Você não tem permissão para acessar essa tabela (verifique RLS)</li>
+                            <li>A tabela está em outro schema</li>
+                        </ul>
+                    </div>
+                `;
+            }
+        }
+
+        // Executar ao carregar a página
+        window.onload = checkTable;
+    </script>
+</body>
+</html>
