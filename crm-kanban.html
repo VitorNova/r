@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM Kanban - LeadboxCRM</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            border-radius: 15px;
+            padding: 20px 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 2em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 15px;
+            background: #28a745;
+            color: white;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .connection-status.loading {
+            background: #ffc107;
+        }
+
+        .connection-status.error {
+            background: #dc3545;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .stats-bar {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #777;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .kanban-board {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            padding-bottom: 20px;
+        }
+
+        .kanban-column {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            min-width: 320px;
+            max-width: 320px;
+            padding: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .column-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid;
+        }
+
+        .column-title {
+            font-size: 1.1em;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .column-count {
+            background: #667eea;
+            color: white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9em;
+            font-weight: 700;
+        }
+
+        .cards-container {
+            min-height: 400px;
+            max-height: calc(100vh - 400px);
+            overflow-y: auto;
+            padding: 5px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            cursor: grab;
+            transition: all 0.3s ease;
+            border-left: 4px solid #667eea;
+        }
+
+        .card:hover {
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .card.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 10px;
+        }
+
+        .card-name {
+            font-weight: 700;
+            font-size: 1.1em;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .card-actions button {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2em;
+            padding: 2px 5px;
+            transition: transform 0.2s;
+        }
+
+        .card-actions button:hover {
+            transform: scale(1.2);
+        }
+
+        .card-info {
+            font-size: 0.9em;
+            color: #666;
+            margin: 5px 0;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .card-value {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #28a745;
+            margin-top: 10px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            color: #667eea;
+            font-size: 1.8em;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            font-family: inherit;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal-actions .btn {
+            flex: 1;
+            justify-content: center;
+        }
+
+        .error-message {
+            background: #dc3545;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        /* Estilos para colunas diferentes */
+        .column-novo { border-color: #667eea; }
+        .column-contato { border-color: #17a2b8; }
+        .column-proposta { border-color: #ffc107; }
+        .column-negociacao { border-color: #fd7e14; }
+        .column-ganho { border-color: #28a745; }
+        .column-perdido { border-color: #dc3545; }
+
+        .cards-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .cards-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .cards-container::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.5em;
+            }
+
+            .kanban-board {
+                flex-direction: column;
+            }
+
+            .kanban-column {
+                min-width: 100%;
+                max-width: 100%;
+            }
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            display: none;
+        }
+
+        .loading-overlay.show {
+            display: flex;
+        }
+
+        .loading-spinner {
+            color: white;
+            font-size: 2em;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-message" id="error-message"></div>
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-spinner">
+            <div>⏳</div>
+            <div>Carregando...</div>
+        </div>
+    </div>
+
+    <div class="header">
+        <div>
+            <h1>📊 CRM Kanban - LeadboxCRM</h1>
+            <div class="connection-status loading" id="connection-status">
+                <span>🔄</span>
+                <span>Conectando...</span>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-primary" onclick="openModal()">
+                ➕ Novo Lead
+            </button>
+            <button class="btn btn-secondary" onclick="loadLeads()">
+                🔄 Atualizar
+            </button>
+        </div>
+    </div>
+
+    <div class="stats-bar">
+        <div class="stat">
+            <div class="stat-value" id="stat-total">0</div>
+            <div class="stat-label">Total de Leads</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value" id="stat-novo">0</div>
+            <div class="stat-label">Novos</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value" id="stat-ganho">0</div>
+            <div class="stat-label">Ganhos</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value" id="stat-valor">R$ 0</div>
+            <div class="stat-label">Valor Total</div>
+        </div>
+    </div>
+
+    <div class="kanban-board" id="kanban-board">
+        <!-- Colunas serão inseridas aqui dinamicamente -->
+    </div>
+
+    <!-- Modal -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Novo Lead</h2>
+            </div>
+            <form id="lead-form" onsubmit="saveLead(event)">
+                <div id="form-fields">
+                    <!-- Campos serão inseridos dinamicamente -->
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-success">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://uaepkqqgagcuvgitakiz.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVhZXBrcXFnYWdjdXZnaXRha2l6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY1MDU1MTksImV4cCI6MjA3MjA4MTUxOX0.WCAEolWKmOvEuEVfb_D6BRNa2rBWcdqZ-WT8pGPG9e0';
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const KANBAN_COLUMNS = [
+            { id: 'novo', name: 'Novo Lead', icon: '🆕', color: '#667eea' },
+            { id: 'contato', name: 'Contato Inicial', icon: '📞', color: '#17a2b8' },
+            { id: 'proposta', name: 'Proposta Enviada', icon: '📄', color: '#ffc107' },
+            { id: 'negociacao', name: 'Negociação', icon: '💬', color: '#fd7e14' },
+            { id: 'ganho', name: 'Ganho', icon: '✅', color: '#28a745' },
+            { id: 'perdido', name: 'Perdido', icon: '❌', color: '#dc3545' }
+        ];
+
+        let leads = [];
+        let tableColumns = [];
+        let editingId = null;
+        let draggedCard = null;
+
+        window.onload = async function() {
+            showLoading(true);
+            await checkConnection();
+            await analyzeTableStructure();
+            createKanbanBoard();
+            await loadLeads();
+            showLoading(false);
+        };
+
+        function showLoading(show) {
+            document.getElementById('loading-overlay').classList.toggle('show', show);
+        }
+
+        async function checkConnection() {
+            try {
+                const { error } = await supabase.from('LeadboxCRM').select('count');
+                if (error) throw error;
+                updateConnectionStatus(true);
+            } catch (error) {
+                console.error('Erro na conexão:', error);
+                updateConnectionStatus(false);
+                showError('Erro ao conectar: ' + error.message);
+            }
+        }
+
+        async function analyzeTableStructure() {
+            try {
+                const { data, error } = await supabase
+                    .from('LeadboxCRM')
+                    .select('*')
+                    .limit(1);
+
+                if (error) throw error;
+
+                if (data && data.length > 0) {
+                    tableColumns = Object.keys(data[0]);
+                    console.log('Colunas da tabela:', tableColumns);
+                } else {
+                    // Tabela vazia, usar estrutura padrão
+                    tableColumns = ['id', 'name', 'phone', 'email', 'status', 'value', 'notes', 'created_at'];
+                }
+
+                createFormFields();
+            } catch (error) {
+                console.error('Erro ao analisar estrutura:', error);
+                tableColumns = ['id', 'name', 'phone', 'email', 'status', 'value', 'notes', 'created_at'];
+                createFormFields();
+            }
+        }
+
+        function createFormFields() {
+            const container = document.getElementById('form-fields');
+            let html = '';
+
+            // Campos comuns que sempre aparecem
+            const commonFields = [
+                { key: 'name', label: 'Nome', type: 'text', required: true },
+                { key: 'phone', label: 'Telefone', type: 'tel', required: true },
+                { key: 'email', label: 'Email', type: 'email', required: false },
+                { key: 'company', label: 'Empresa', type: 'text', required: false },
+                { key: 'value', label: 'Valor (R$)', type: 'text', required: false },
+                { key: 'notes', label: 'Observações', type: 'textarea', required: false },
+                { key: 'status', label: 'Status', type: 'select', required: true, options: KANBAN_COLUMNS }
+            ];
+
+            commonFields.forEach(field => {
+                if (field.type === 'select') {
+                    html += `
+                        <div class="form-group">
+                            <label for="${field.key}">${field.label}${field.required ? ' *' : ''}</label>
+                            <select id="${field.key}" ${field.required ? 'required' : ''}>
+                                ${field.options.map(opt => `<option value="${opt.id}">${opt.name}</option>`).join('')}
+                            </select>
+                        </div>
+                    `;
+                } else if (field.type === 'textarea') {
+                    html += `
+                        <div class="form-group">
+                            <label for="${field.key}">${field.label}${field.required ? ' *' : ''}</label>
+                            <textarea id="${field.key}" ${field.required ? 'required' : ''}></textarea>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div class="form-group">
+                            <label for="${field.key}">${field.label}${field.required ? ' *' : ''}</label>
+                            <input type="${field.type}" id="${field.key}" ${field.required ? 'required' : ''}>
+                        </div>
+                    `;
+                }
+            });
+
+            container.innerHTML = html;
+        }
+
+        function updateConnectionStatus(connected) {
+            const el = document.getElementById('connection-status');
+            if (connected) {
+                el.className = 'connection-status';
+                el.innerHTML = '<span>✅</span><span>Conectado</span>';
+            } else {
+                el.className = 'connection-status error';
+                el.innerHTML = '<span>❌</span><span>Erro</span>';
+            }
+        }
+
+        function showError(message) {
+            const el = document.getElementById('error-message');
+            el.textContent = message;
+            el.classList.add('show');
+            setTimeout(() => el.classList.remove('show'), 5000);
+        }
+
+        function createKanbanBoard() {
+            const board = document.getElementById('kanban-board');
+            board.innerHTML = KANBAN_COLUMNS.map(col => `
+                <div class="kanban-column column-${col.id}" data-status="${col.id}">
+                    <div class="column-header" style="border-color: ${col.color}">
+                        <div class="column-title" style="color: ${col.color}">
+                            <span>${col.icon}</span>
+                            <span>${col.name}</span>
+                        </div>
+                        <div class="column-count" style="background: ${col.color}">0</div>
+                    </div>
+                    <div class="cards-container"
+                         ondrop="drop(event)"
+                         ondragover="allowDrop(event)"
+                         data-status="${col.id}">
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function loadLeads() {
+            try {
+                showLoading(true);
+                const { data, error } = await supabase
+                    .from('LeadboxCRM')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                leads = data || [];
+                renderKanban();
+                updateStats();
+                showLoading(false);
+            } catch (error) {
+                console.error('Erro ao carregar leads:', error);
+                showError('Erro ao carregar leads: ' + error.message);
+                showLoading(false);
+            }
+        }
+
+        function renderKanban() {
+            KANBAN_COLUMNS.forEach(col => {
+                const container = document.querySelector(`.cards-container[data-status="${col.id}"]`);
+                const columnLeads = leads.filter(lead => (lead.status || 'novo') === col.id);
+
+                // Atualizar contagem
+                const countEl = container.closest('.kanban-column').querySelector('.column-count');
+                countEl.textContent = columnLeads.length;
+
+                // Renderizar cards
+                container.innerHTML = columnLeads.map(lead => createCardHTML(lead)).join('');
+
+                // Adicionar eventos de drag aos cards
+                container.querySelectorAll('.card').forEach(card => {
+                    card.addEventListener('dragstart', dragStart);
+                    card.addEventListener('dragend', dragEnd);
+                });
+            });
+        }
+
+        function createCardHTML(lead) {
+            const value = lead.value || lead.price || lead.valor || '0';
+            const phone = lead.phone || lead.telefone || lead.tel || '';
+            const email = lead.email || '';
+            const name = lead.name || lead.nome || lead.client_name || 'Sem nome';
+            const company = lead.company || lead.empresa || '';
+            const notes = lead.notes || lead.observacoes || lead.obs || '';
+
+            return `
+                <div class="card" draggable="true" data-id="${lead.id}">
+                    <div class="card-header">
+                        <div>
+                            <div class="card-name">${name}</div>
+                            ${company ? `<div class="card-info">🏢 ${company}</div>` : ''}
+                        </div>
+                        <div class="card-actions">
+                            <button onclick="openModal('${lead.id}')" title="Editar">✏️</button>
+                            <button onclick="deleteLead('${lead.id}')" title="Excluir">🗑️</button>
+                        </div>
+                    </div>
+                    ${phone ? `<div class="card-info">📞 ${phone}</div>` : ''}
+                    ${email ? `<div class="card-info">📧 ${email}</div>` : ''}
+                    ${notes ? `<div class="card-info">📝 ${notes.substring(0, 50)}${notes.length > 50 ? '...' : ''}</div>` : ''}
+                    <div class="card-value">💰 ${formatCurrency(value)}</div>
+                </div>
+            `;
+        }
+
+        function formatCurrency(value) {
+            const num = parseFloat(String(value).replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
+            return num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        function updateStats() {
+            const total = leads.length;
+            const novo = leads.filter(l => (l.status || 'novo') === 'novo').length;
+            const ganho = leads.filter(l => (l.status || 'novo') === 'ganho').length;
+            const totalValue = leads
+                .filter(l => (l.status || 'novo') === 'ganho')
+                .reduce((sum, l) => {
+                    const val = parseFloat(String(l.value || l.price || l.valor || 0).replace(/[^\d.,]/g, '').replace(',', '.'));
+                    return sum + val;
+                }, 0);
+
+            document.getElementById('stat-total').textContent = total;
+            document.getElementById('stat-novo').textContent = novo;
+            document.getElementById('stat-ganho').textContent = ganho;
+            document.getElementById('stat-valor').textContent = formatCurrency(totalValue);
+        }
+
+        // Drag and Drop
+        function dragStart(e) {
+            draggedCard = e.target;
+            e.target.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/html', e.target.innerHTML);
+        }
+
+        function dragEnd(e) {
+            e.target.classList.remove('dragging');
+        }
+
+        function allowDrop(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        }
+
+        async function drop(e) {
+            e.preventDefault();
+            if (!draggedCard) return;
+
+            const newStatus = e.currentTarget.dataset.status;
+            const leadId = draggedCard.dataset.id;
+
+            try {
+                const { error } = await supabase
+                    .from('LeadboxCRM')
+                    .update({ status: newStatus })
+                    .eq('id', leadId);
+
+                if (error) throw error;
+
+                await loadLeads();
+            } catch (error) {
+                console.error('Erro ao atualizar status:', error);
+                showError('Erro ao mover card: ' + error.message);
+            }
+
+            draggedCard = null;
+        }
+
+        function openModal(id = null) {
+            const modal = document.getElementById('modal');
+            modal.classList.add('active');
+            editingId = id;
+
+            if (id) {
+                document.getElementById('modal-title').textContent = 'Editar Lead';
+                const lead = leads.find(l => l.id === id);
+                if (lead) {
+                    document.getElementById('name').value = lead.name || lead.nome || '';
+                    document.getElementById('phone').value = lead.phone || lead.telefone || '';
+                    document.getElementById('email').value = lead.email || '';
+                    document.getElementById('company').value = lead.company || lead.empresa || '';
+                    document.getElementById('value').value = lead.value || lead.valor || '';
+                    document.getElementById('notes').value = lead.notes || lead.observacoes || '';
+                    document.getElementById('status').value = lead.status || 'novo';
+                }
+            } else {
+                document.getElementById('modal-title').textContent = 'Novo Lead';
+                document.getElementById('lead-form').reset();
+                document.getElementById('status').value = 'novo';
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+            editingId = null;
+        }
+
+        async function saveLead(e) {
+            e.preventDefault();
+
+            const leadData = {
+                name: document.getElementById('name').value,
+                phone: document.getElementById('phone').value,
+                email: document.getElementById('email').value,
+                company: document.getElementById('company').value,
+                value: document.getElementById('value').value,
+                notes: document.getElementById('notes').value,
+                status: document.getElementById('status').value
+            };
+
+            try {
+                showLoading(true);
+                if (editingId) {
+                    const { error } = await supabase
+                        .from('LeadboxCRM')
+                        .update(leadData)
+                        .eq('id', editingId);
+                    if (error) throw error;
+                } else {
+                    const { error } = await supabase
+                        .from('LeadboxCRM')
+                        .insert([leadData]);
+                    if (error) throw error;
+                }
+
+                closeModal();
+                await loadLeads();
+                showLoading(false);
+            } catch (error) {
+                console.error('Erro ao salvar:', error);
+                showError('Erro ao salvar lead: ' + error.message);
+                showLoading(false);
+            }
+        }
+
+        async function deleteLead(id) {
+            if (!confirm('Tem certeza que deseja excluir este lead?')) return;
+
+            try {
+                showLoading(true);
+                const { error } = await supabase
+                    .from('LeadboxCRM')
+                    .delete()
+                    .eq('id', id);
+
+                if (error) throw error;
+                await loadLeads();
+                showLoading(false);
+            } catch (error) {
+                console.error('Erro ao deletar:', error);
+                showError('Erro ao deletar lead: ' + error.message);
+                showLoading(false);
+            }
+        }
+
+        document.getElementById('modal').addEventListener('click', (e) => {
+            if (e.target.id === 'modal') closeModal();
+        });
+    </script>
+</body>
+</html>
