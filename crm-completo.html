@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM - Gerenciamento de Clientes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card-header {
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 1.5em;
+            color: #333;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .card-phone {
+            color: #667eea;
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+
+        .card-body {
+            margin: 15px 0;
+        }
+
+        .card-field {
+            margin-bottom: 12px;
+        }
+
+        .field-label {
+            font-weight: 600;
+            color: #555;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .field-value {
+            color: #333;
+            font-size: 1em;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+
+        .card-value {
+            font-size: 1.8em;
+            color: #28a745;
+            font-weight: 700;
+            margin: 15px 0;
+            text-align: right;
+        }
+
+        .card-summary {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            margin: 15px 0;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .card-actions .btn {
+            flex: 1;
+            justify-content: center;
+            padding: 10px;
+            font-size: 0.95em;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            margin-bottom: 25px;
+        }
+
+        .modal-header h2 {
+            color: #667eea;
+            font-size: 2em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 1em;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            font-family: inherit;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .modal-actions .btn {
+            flex: 1;
+            justify-content: center;
+        }
+
+        .empty-state {
+            background: white;
+            border-radius: 15px;
+            padding: 60px 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .empty-state-icon {
+            font-size: 5em;
+            margin-bottom: 20px;
+        }
+
+        .empty-state h2 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .empty-state p {
+            color: #777;
+            font-size: 1.1em;
+        }
+
+        .stats {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #777;
+            font-size: 1em;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+
+            header {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>
+                <span>📊</span>
+                <span>CRM - Gerenciamento de Clientes</span>
+            </h1>
+            <button class="btn btn-primary" onclick="openModal()">
+                <span>➕</span>
+                <span>Novo Cliente</span>
+            </button>
+        </header>
+
+        <div class="stats" id="stats">
+            <div class="stat-item">
+                <div class="stat-value" id="total-clients">0</div>
+                <div class="stat-label">Total de Clientes</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="total-value">R$ 0,00</div>
+                <div class="stat-label">Valor Total</div>
+            </div>
+        </div>
+
+        <div class="cards-grid" id="cards-container"></div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Novo Cliente</h2>
+            </div>
+            <form id="client-form" onsubmit="saveClient(event)">
+                <div class="form-group">
+                    <label for="name">Nome do Cliente *</label>
+                    <input type="text" id="name" required placeholder="Ex: João Silva">
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Telefone *</label>
+                    <input type="tel" id="phone" required placeholder="Ex: (11) 98765-4321">
+                </div>
+
+                <div class="form-group">
+                    <label for="product">Produto *</label>
+                    <input type="text" id="product" required placeholder="Ex: Software CRM">
+                </div>
+
+                <div class="form-group">
+                    <label for="service">Serviço *</label>
+                    <input type="text" id="service" required placeholder="Ex: Implementação e Treinamento">
+                </div>
+
+                <div class="form-group">
+                    <label for="value">Valor (R$) *</label>
+                    <input type="text" id="value" required placeholder="Ex: 5000,00">
+                </div>
+
+                <div class="form-group">
+                    <label for="summary">Resumo do Atendimento *</label>
+                    <textarea id="summary" required placeholder="Descreva detalhes do atendimento, observações importantes, próximos passos, etc."></textarea>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-success">Salvar Cliente</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let clients = [];
+        let editingIndex = null;
+
+        // Carregar dados ao iniciar
+        window.onload = function() {
+            loadClients();
+            renderCards();
+            updateStats();
+        };
+
+        // Abrir modal
+        function openModal(index = null) {
+            const modal = document.getElementById('modal');
+            const modalTitle = document.getElementById('modal-title');
+            const form = document.getElementById('client-form');
+
+            modal.classList.add('active');
+            editingIndex = index;
+
+            if (index !== null) {
+                modalTitle.textContent = 'Editar Cliente';
+                const client = clients[index];
+                document.getElementById('name').value = client.name;
+                document.getElementById('phone').value = client.phone;
+                document.getElementById('product').value = client.product;
+                document.getElementById('service').value = client.service;
+                document.getElementById('value').value = client.value;
+                document.getElementById('summary').value = client.summary;
+            } else {
+                modalTitle.textContent = 'Novo Cliente';
+                form.reset();
+            }
+        }
+
+        // Fechar modal
+        function closeModal() {
+            const modal = document.getElementById('modal');
+            modal.classList.remove('active');
+            editingIndex = null;
+            document.getElementById('client-form').reset();
+        }
+
+        // Salvar cliente
+        function saveClient(event) {
+            event.preventDefault();
+
+            const client = {
+                name: document.getElementById('name').value,
+                phone: document.getElementById('phone').value,
+                product: document.getElementById('product').value,
+                service: document.getElementById('service').value,
+                value: document.getElementById('value').value,
+                summary: document.getElementById('summary').value,
+                createdAt: editingIndex !== null ? clients[editingIndex].createdAt : new Date().toISOString()
+            };
+
+            if (editingIndex !== null) {
+                clients[editingIndex] = client;
+            } else {
+                clients.push(client);
+            }
+
+            saveToLocalStorage();
+            renderCards();
+            updateStats();
+            closeModal();
+        }
+
+        // Deletar cliente
+        function deleteClient(index) {
+            if (confirm('Tem certeza que deseja excluir este cliente?')) {
+                clients.splice(index, 1);
+                saveToLocalStorage();
+                renderCards();
+                updateStats();
+            }
+        }
+
+        // Formatar valor em moeda
+        function formatCurrency(value) {
+            const number = parseFloat(value.replace(/[^\d,]/g, '').replace(',', '.')) || 0;
+            return number.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        // Renderizar cards
+        function renderCards() {
+            const container = document.getElementById('cards-container');
+
+            if (clients.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📋</div>
+                        <h2>Nenhum cliente cadastrado</h2>
+                        <p>Clique em "Novo Cliente" para começar</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = clients.map((client, index) => `
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">${client.name}</div>
+                        <div class="card-phone">📞 ${client.phone}</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-field">
+                            <span class="field-label">Produto</span>
+                            <div class="field-value">📦 ${client.product}</div>
+                        </div>
+                        <div class="card-field">
+                            <span class="field-label">Serviço</span>
+                            <div class="field-value">⚙️ ${client.service}</div>
+                        </div>
+                        <div class="card-value">
+                            💰 ${formatCurrency(client.value)}
+                        </div>
+                        <div class="card-field">
+                            <span class="field-label">Resumo do Atendimento</span>
+                            <div class="card-summary">${client.summary}</div>
+                        </div>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-primary" onclick="openModal(${index})">✏️ Editar</button>
+                        <button class="btn btn-danger" onclick="deleteClient(${index})">🗑️ Excluir</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Atualizar estatísticas
+        function updateStats() {
+            const totalClients = clients.length;
+            const totalValue = clients.reduce((sum, client) => {
+                const value = parseFloat(client.value.replace(/[^\d,]/g, '').replace(',', '.')) || 0;
+                return sum + value;
+            }, 0);
+
+            document.getElementById('total-clients').textContent = totalClients;
+            document.getElementById('total-value').textContent = totalValue.toLocaleString('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            });
+        }
+
+        // Salvar no localStorage
+        function saveToLocalStorage() {
+            localStorage.setItem('crm-clients', JSON.stringify(clients));
+        }
+
+        // Carregar do localStorage
+        function loadClients() {
+            const saved = localStorage.getItem('crm-clients');
+            if (saved) {
+                clients = JSON.parse(saved);
+            }
+        }
+
+        // Fechar modal ao clicar fora
+        document.getElementById('modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // Formatar input de valor enquanto digita
+        document.getElementById('value').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/[^\d,]/g, '');
+            e.target.value = value;
+        });
+
+        // Formatar telefone enquanto digita
+        document.getElementById('phone').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length <= 11) {
+                value = value.replace(/^(\d{2})(\d)/g, '($1) $2');
+                value = value.replace(/(\d)(\d{4})$/, '$1-$2');
+            }
+            e.target.value = value;
+        });
+    </script>
+</body>
+</html>
